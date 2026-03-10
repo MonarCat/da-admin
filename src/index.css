@@ -1,0 +1,169 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg:          #02070d;
+  --bg2:         #030c14;
+  --panel:       #040e1a;
+  --panel2:      #051120;
+  --border:      #0a1f33;
+  --border2:     #0d2840;
+  --accent:      #00d4ff;
+  --accent-dim:  rgba(0,212,255,0.1);
+  --accent-glow: rgba(0,212,255,0.25);
+  --green:       #00ff9d;
+  --green-dim:   rgba(0,255,157,0.1);
+  --red:         #ff2d44;
+  --red-dim:     rgba(255,45,68,0.12);
+  --orange:      #ff8c00;
+  --orange-dim:  rgba(255,140,0,0.1);
+  --yellow:      #ffc82c;
+  --purple:      #b060ff;
+  --text:        #b8ccd8;
+  --text-mid:    #5a7a8a;
+  --text-dim:    #2a4055;
+  --gold:        #d4a847;
+  --gold-dim:    rgba(212,168,71,0.1);
+}
+
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+html, body, #root { height: 100%; width: 100%; overflow: hidden; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Exo 2', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  cursor: default;
+}
+
+/* Custom cursor for admin */
+* { cursor: crosshair !important; }
+button, a, input, select, textarea { cursor: pointer !important; }
+
+::-webkit-scrollbar { width: 3px; height: 3px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border2); }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+/* Leaflet overrides */
+.leaflet-container { background: #010810 !important; font-family: 'Share Tech Mono', monospace !important; }
+.leaflet-tile { filter: brightness(0.35) saturate(0.2) hue-rotate(200deg) contrast(1.2) !important; }
+.leaflet-control-zoom { border: 1px solid var(--border) !important; background: var(--panel) !important; }
+.leaflet-control-zoom a { background: var(--panel) !important; color: var(--accent) !important; border-color: var(--border) !important; }
+.leaflet-control-attribution { background: rgba(2,7,13,0.9) !important; color: var(--text-dim) !important; font-size: 7px !important; }
+.leaflet-control-attribution a { color: var(--accent) !important; }
+.da-vehicle-marker { background: transparent; border: none; }
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:0.35;transform:scale(0.6)} }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.15} }
+@keyframes ripple { 0%{transform:scale(0.4);opacity:0.9} 100%{transform:scale(2.8);opacity:0} }
+@keyframes sosPulse { 0%,100%{box-shadow:0 0 0 0 rgba(255,45,68,0.7)} 50%{box-shadow:0 0 0 14px rgba(255,45,68,0)} }
+@keyframes slideLeft { from{transform:translateX(-100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideRight { from{transform:translateX(100%);opacity:0} to{transform:translateX(0);opacity:1} }
+@keyframes slideDown { from{transform:translateY(-30px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes slideUp { from{transform:translateY(30px);opacity:0} to{transform:translateY(0);opacity:1} }
+@keyframes fadeIn { from{opacity:0} to{opacity:1} }
+@keyframes scanMove { 0%{top:-2px} 100%{top:100%} }
+@keyframes rotateRing { 0%{transform:rotate(0deg)} 100%{transform:rotate(360deg)} }
+@keyframes fillBar { from{width:0} to{width:var(--target-width)} }
+@keyframes cmdPending { 0%,100%{background:rgba(0,212,255,0.05)} 50%{background:rgba(0,212,255,0.12)} }
+@keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-4px)} 40%,80%{transform:translateX(4px)} }
+@keyframes glow-pulse { 0%,100%{text-shadow:0 0 8px rgba(0,212,255,0.4)} 50%{text-shadow:0 0 20px rgba(0,212,255,0.9), 0 0 40px rgba(0,212,255,0.4)} }
+
+/* Scanline overlay */
+.scanlines::after {
+  content:'';
+  position:absolute;
+  inset:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.04) 3px,rgba(0,0,0,0.04) 4px);
+  pointer-events:none;
+  z-index:9000;
+}
+
+/* Animated scan beam */
+.scan-beam::before {
+  content:'';
+  position:absolute;
+  left:0; right:0;
+  height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,212,255,0.3),transparent);
+  animation:scanMove 4s linear infinite;
+  pointer-events:none;
+  z-index:8999;
+}
+
+/* Grid background */
+.grid-bg {
+  background-image:
+    linear-gradient(rgba(0,212,255,0.018) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,255,0.018) 1px, transparent 1px);
+  background-size:50px 50px;
+}
+
+/* Hex grid accent */
+.hex-bg { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49'%3E%3Cpath d='M14 0 L28 8 L28 24 L14 32 L0 24 L0 8 Z' fill='none' stroke='rgba(0,212,255,0.04)' stroke-width='1'/%3E%3C/svg%3E"); }
+
+/* Utility classes */
+.text-accent { color: var(--accent); }
+.text-green { color: var(--green); }
+.text-red { color: var(--red); }
+.text-orange { color: var(--orange); }
+.text-gold { color: var(--gold); }
+.text-dim { color: var(--text-dim); }
+.text-mid { color: var(--text-mid); }
+.font-mono { font-family: 'Share Tech Mono', monospace; }
+.font-orbitron { font-family: 'Orbitron', sans-serif; }
+.font-rajdhani { font-family: 'Rajdhani', sans-serif; }
+
+.glow-accent { box-shadow: 0 0 20px rgba(0,212,255,0.2); }
+.glow-red { box-shadow: 0 0 20px rgba(255,45,68,0.3); }
+.glow-green { box-shadow: 0 0 20px rgba(0,255,157,0.2); }
+.text-glow-accent { text-shadow: 0 0 12px rgba(0,212,255,0.7); }
+.text-glow-red { text-shadow: 0 0 12px rgba(255,45,68,0.8); }
+.animate-glow { animation: glow-pulse 2s ease-in-out infinite; }
+.animate-blink { animation: blink 0.9s ease-in-out infinite; }
+.animate-sos { animation: sosPulse 0.8s ease-in-out infinite; }
+.animate-rotate { animation: rotateRing 8s linear infinite; }
+.animate-fade { animation: fadeIn 0.35s ease-out; }
+.animate-slide-down { animation: slideDown 0.3s ease-out; }
+
+/* Command status badges */
+.badge-pending   { background:rgba(0,212,255,0.1); color:var(--accent); border:1px solid rgba(0,212,255,0.3); }
+.badge-delivered { background:rgba(0,255,157,0.08); color:var(--green); border:1px solid rgba(0,255,157,0.25); }
+.badge-executed  { background:rgba(0,255,157,0.12); color:var(--green); border:1px solid rgba(0,255,157,0.4); }
+.badge-failed    { background:rgba(255,45,68,0.1); color:var(--red); border:1px solid rgba(255,45,68,0.3); }
+.badge-timeout   { background:rgba(255,140,0,0.08); color:var(--orange); border:1px solid rgba(255,140,0,0.25); }
+
+/* Role badges */
+.role-super_admin  { background:rgba(212,168,71,0.1); color:var(--gold); border:1px solid rgba(212,168,71,0.3); }
+.role-government   { background:rgba(176,96,255,0.1); color:var(--purple); border:1px solid rgba(176,96,255,0.3); }
+.role-admin        { background:rgba(0,212,255,0.1); color:var(--accent); border:1px solid rgba(0,212,255,0.3); }
+.role-fleet_manager{ background:rgba(0,255,157,0.08); color:var(--green); border:1px solid rgba(0,255,157,0.25); }
+.role-driver       { background:rgba(90,122,138,0.1); color:var(--text-mid); border:1px solid var(--border); }
+
+/* Panel styles */
+.cmd-panel {
+  background: var(--panel2);
+  border: 1px solid var(--border2);
+  border-radius: 6px;
+  transition: border-color 0.2s;
+}
+.cmd-panel:hover { border-color: rgba(0,212,255,0.2); }
+
+/* Danger zone styling */
+.danger-btn {
+  border: 1px solid rgba(255,45,68,0.4) !important;
+  background: rgba(255,45,68,0.06) !important;
+  color: var(--red) !important;
+  transition: all 0.15s !important;
+}
+.danger-btn:hover {
+  border-color: var(--red) !important;
+  background: rgba(255,45,68,0.15) !important;
+  box-shadow: 0 0 16px rgba(255,45,68,0.3) !important;
+}
