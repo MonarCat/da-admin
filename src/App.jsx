@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useAuth } from './hooks/useAuth.js'
-import Login from './pages/auth/Login.jsx'
-import SignUp from './pages/auth/SignUp.jsx'
+import Login from './pages/Login.jsx'
+import AdminSignUp from './pages/AdminSignUp.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 
 export default function App() {
@@ -23,7 +23,7 @@ export default function App() {
 
   if (!user) {
     if (page === 'signup') return (
-      <SignUp onSuccess={() => setPage('login')} onBackToLogin={() => setPage('login')} />
+      <AdminSignUp onSuccess={() => setPage('login')} onBackToLogin={() => setPage('login')} />
     )
     return (
       <Login
