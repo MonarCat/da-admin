@@ -1,21 +1,38 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useAuth } from './hooks/useAuth.js'
-import Login from './pages/Login.jsx'
+import Login from './pages/auth/Login.jsx'
+import SignUp from './pages/auth/SignUp.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 
 export default function App() {
-  const { user, loading, signIn, demo, signOut } = useAuth()
+  const { user, session, loading, signIn, demo, signOut } = useAuth()
+  const [page, setPage] = useState('login') // login | signup
+
+  // Check URL for /signup route
+  const path = window.location.pathname
+  if (!loading && !user && path.startsWith('/signup') && page !== 'signup') {
+    setPage('signup')
+  }
 
   if (loading) return (
     <div style={{ height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg)', flexDirection:'column', gap:14 }}>
       <div style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--border)', borderTop:'1px solid var(--accent)', animation:'spin 1s linear infinite' }}/>
-      <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:10, letterSpacing:4, color:'var(--accent)' }}>
-        INITIALIZING...
-      </span>
+      <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:10, letterSpacing:4, color:'var(--accent)' }}>INITIALIZING...</span>
     </div>
   )
 
-  if (!user) return <Login onLogin={signIn} onDemo={demo} />
+  if (!user) {
+    if (page === 'signup') return (
+      <SignUp onSuccess={() => setPage('login')} onBackToLogin={() => setPage('login')} />
+    )
+    return (
+      <Login
+        onLogin={signIn}
+        onDemo={demo}
+        onSignUp={() => setPage('signup')}
+      />
+    )
+  }
 
-  return <Dashboard user={user} onSignOut={signOut} />
+  return <Dashboard user={user} session={session} onSignOut={signOut} />
 }
