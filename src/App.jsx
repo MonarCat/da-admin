@@ -1,0 +1,21 @@
+import React from 'react'
+import { useAuth } from './hooks/useAuth.js'
+import Login from './pages/Login.jsx'
+import Dashboard from './pages/Dashboard.jsx'
+
+export default function App() {
+  const { user, loading, signIn, demo, signOut } = useAuth()
+
+  if (loading) return (
+    <div style={{ height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg)', flexDirection:'column', gap:14 }}>
+      <div style={{ width:40, height:40, borderRadius:'50%', border:'1px solid var(--border)', borderTop:'1px solid var(--accent)', animation:'spin 1s linear infinite' }}/>
+      <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:10, letterSpacing:4, color:'var(--accent)' }}>
+        INITIALIZING...
+      </span>
+    </div>
+  )
+
+  if (!user) return <Login onLogin={signIn} onDemo={demo} />
+
+  return <Dashboard user={user} onSignOut={signOut} />
+}
