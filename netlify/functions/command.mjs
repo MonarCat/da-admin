@@ -4,10 +4,12 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  Netlify.env.get('SUPABASE_URL'),
-  Netlify.env.get('SUPABASE_SERVICE_ROLE_KEY')
-)
+const SUPABASE_URL = Netlify.env.get('SUPABASE_URL')
+const SUPABASE_SERVICE_ROLE_KEY = Netlify.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+const supabase = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  : null
 
 const ALLOWED_ROLES = ['admin', 'super_admin', 'government']
 
@@ -36,6 +38,7 @@ const COMMAND_AUTH = {
 }
 
 export default async (req) => {
+  if (!supabase) return json({ error: 'Server configuration error: Supabase environment variables are not set.' }, 503)
   if (req.method !== 'POST') {
     return json({ error: 'Method not allowed' }, 405)
   }

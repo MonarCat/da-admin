@@ -4,12 +4,19 @@
 
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  Netlify.env.get('SUPABASE_URL'),
-  Netlify.env.get('SUPABASE_SERVICE_ROLE_KEY') // server-side only, never expose
-)
+const SUPABASE_URL = Netlify.env.get('SUPABASE_URL')
+const SUPABASE_SERVICE_ROLE_KEY = Netlify.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+const supabase = SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY
+  ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
+  : null
 
 export default async (req) => {
+  if (!supabase) {
+    return new Response(JSON.stringify({ error: 'Server configuration error: Supabase environment variables are not set.' }), {
+      status: 503, headers: { 'Content-Type': 'application/json' }
+    })
+  }
   if (req.method !== 'POST') {
     return new Response(JSON.stringify({ error: 'Method not allowed' }), {
       status: 405, headers: { 'Content-Type': 'application/json' }
