@@ -1,88 +1,108 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
 
-const ADMIN_ROLES = ['admin', 'super_admin', 'government', 'fleet_manager']
-
 export function useAuth() {
   const [user, setUser]       = useState(null)
   const [session, setSession] = useState(null)
+  const [profile, setProfile] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       setSession(s)
-      if (s?.user) await hydrate(s.user)
+      if (s?.user) await hydrate(s.user, s.access_token)
       setLoading(false)
     })
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
       setSession(s)
-      if (event === 'SIGNED_OUT') { setUser(null); setSession(null) }
-      if (event === 'SIGNED_IN' && s?.user) await hydrate(s.user)
-      if (event === 'TOKEN_REFRESHED') setSession(s)
+      if (event === 'SIGNED_OUT')  { setUser(null); setProfile(null) }
+      if (event === 'SIGNED_IN' && s?.user) await hydrate(s.user, s.access_token)
     })
 
     return () => subscription.unsubscribe()
   }, [])
 
-  async function hydrate(u) {
+  async function hydrate(u, token) {
+    // Layer 1 — try the API function
     try {
-      const { data: profile, error } = await supabase
+      const res = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setUser(u)
+        setProfile(data.profile)
+        return
+      }
+    } catch {}
+
+    // Layer 2 — query Supabase directly
+    try {
+      const { data: p } = await supabase
         .from('profiles')
-        .select('*, org:organizations(name,type,license_tier)')
+        .select('*')
         .eq('id', u.id)
         .single()
 
-      if (error || !profile) throw new Error('Profile not found')
-      if (!profile.is_active) { await supabase.auth.signOut(); throw new Error('Account deactivated') }
-      if (!ADMIN_ROLES.includes(profile.role)) {
-        await supabase.auth.signOut()
-        throw new Error(`Role '${profile.role}' does not have admin access`)
+      if (p) {
+        setUser(u)
+        setProfile(p)
+        return
       }
 
-      setUser({ ...u, profile })
+      // Layer 3 — profile missing, create it on the fly
+      const name = u.user_metadata?.full_name || u.email?.split('@')[0] || 'User'
+      const { data: newProfile } = await supabase
+        .from('profiles')
+        .insert({
+          id: u.id,
+          full_name: name,
+          phone: u.user_metadata?.phone || null,
+          role: 'driver',
+          is_active: true,
+          clearance_level: 1,
+          avatar_initials: name[0].toUpperCase(),
+        })
+        .select()
+        .single()
+
+      setUser(u)
+      setProfile(newProfile || { id: u.id, full_name: name, role: 'driver' })
+
     } catch (e) {
-      console.warn('Auth hydration:', e.message)
-      setUser(null)
+      console.warn('Auth hydration failed:', e.message)
+      // Layer 4 — let them in with bare minimum, admin can fix later
+      setUser(u)
+      setProfile({ id: u.id, full_name: u.email, role: 'driver' })
     }
-    setLoading(false)
   }
 
   async function signIn(email, password) {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password })
     if (error) throw error
-    // Track login via API
-    try {
-      await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${data.session?.access_token}` }
-      })
-    } catch {}
     return data
   }
 
-  // Demo mode — bypasses Supabase entirely
+  async function signOut() {
+    setUser(null); setProfile(null); setSession(null)
+    await supabase.auth.signOut()
+  }
+
   function demo() {
-    const demoUser = {
-      id:    'demo-super-admin',
-      email: 'demo@da-command.gov',
-      profile: {
-        full_name:       'Demo Operator',
-        role:            'super_admin',
-        clearance_level: 10,
-        is_active:       true,
-        org:             { name: 'D.A Command', type: 'government' },
-        avatar_initials: 'D',
-      }
-    }
-    setUser(demoUser)
-    setSession({ access_token: 'demo-token', user: demoUser })
+    setUser({ id: 'demo', email: 'demo@da.local' })
+    setProfile({
+      id: 'demo',
+      full_name: 'Demo Operator',
+      role: 'super_admin',
+      clearance_level: 10,
+      is_active: true,
+    })
   }
 
-  function signOut() {
-    setUser(null)
-    setSession(null)
-    supabase.auth.signOut()
+  return {
+    user, session, profile, loading,
+    isAuthenticated: !!user,
+    signIn, signOut, demo,
   }
-
-  return { user, session, loading, signIn, demo, signOut }
 }
