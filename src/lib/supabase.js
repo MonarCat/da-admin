@@ -1,18 +1,24 @@
-import { createClient } from '@supabase/supabase-js'
+jsimport { createClient } from '@supabase/supabase-js'
 
-// Netlify's Supabase integration sets these exact names:
-// VITE_SUPABASE_DATABASE_URL  = project URL
-// VITE_SUPABASE_ANON_KEY      = anon/public key
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_DATABASE_URL
 const SUPABASE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY
 
-export const isConfigured = !!(SUPABASE_URL && SUPABASE_KEY)
+// Debug — remove after confirming it works
+console.log('[supabase] URL:', SUPABASE_URL)
+console.log('[supabase] KEY:', SUPABASE_KEY ? SUPABASE_KEY.slice(0, 20) + '...' : 'MISSING')
+
+if (!SUPABASE_URL || SUPABASE_URL.includes('placeholder')) {
+  console.error('❌ VITE_SUPABASE_DATABASE_URL is not set. Check Netlify env vars.')
+}
+
+export const isConfigured = !!(
+  SUPABASE_URL &&
+  SUPABASE_KEY &&
+  !SUPABASE_URL.includes('placeholder')
+)
 
 export const supabase = createClient(
-  SUPABASE_URL || 'https://placeholder.supabase.co',
-  SUPABASE_KEY || 'placeholder-anon-key',
-  {
-    realtime: { params: { eventsPerSecond: 15 } },
-    auth: { persistSession: true, autoRefreshToken: true }
-  }
+  SUPABASE_URL,
+  SUPABASE_KEY
 )
+```
