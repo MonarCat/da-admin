@@ -72,7 +72,7 @@ export function useAuth() {
 
     // Layer 3 — bare minimum, never block
     setUser(u)
-    setProfile({ id: u.id, full_name: u.email?.split('@')[0], role: 'driver' })
+    setProfile({ id: u.id, full_name: u.email?.split('@')[0] ?? 'User', role: 'driver' })
   }
 
   async function signIn(email, password) {
@@ -88,7 +88,7 @@ export function useAuth() {
 
   function demo() {
     setUser({ id: 'demo', email: 'demo@da.local' })
-    setProfile({ id:'demo', full_name:'Demo Operator', role:'super_admin', clearance_level:10, is_active:true })
+    setProfile({ id: 'demo', full_name: 'Demo Operator', role: 'super_admin', clearance_level: 10, is_active: true })
     setLoading(false)
   }
 

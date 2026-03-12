@@ -10,9 +10,13 @@ export default function App() {
   const [loadingTooLong, setLoadingTooLong] = useState(false)
 
   useEffect(() => {
+    if (!loading) {
+      setLoadingTooLong(false)
+      return
+    }
     const t = setTimeout(() => setLoadingTooLong(true), 4000)
     return () => clearTimeout(t)
-  }, [])
+  }, [loading])
 
   // Check URL for /signup route
   const path = window.location.pathname
