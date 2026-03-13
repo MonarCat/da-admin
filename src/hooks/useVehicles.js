@@ -30,10 +30,22 @@ export function useVehicles(isDemo = false) {
     loadAll()
 
     channelRef.current = supabase
-      .channel('admin-vehicles')
-      .on('postgres_changes', { event:'*', schema:'public', table:'vehicles' }, loadAll)
-      .on('postgres_changes', { event:'*', schema:'public', table:'sos_events' }, loadSOS)
-      .subscribe()
+      .channel('admin-vehicles-feed')
+      .on(
+        'postgres_changes',
+        // No filter here — load all and let the query handle it
+        // Filtering on the channel causes new vehicles to be missed
+        { event: '*', schema: 'public', table: 'vehicles' },
+        () => loadAll()
+      )
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'sos_events' },
+        () => loadSOS()
+      )
+      .subscribe((status) => {
+        console.log('Vehicles channel:', status)
+      })
 
     return () => {
       if (channelRef.current) supabase.removeChannel(channelRef.current)

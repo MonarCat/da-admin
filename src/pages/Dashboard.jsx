@@ -1,16 +1,18 @@
 import React, { useState } from 'react'
 import { useVehicles } from '../hooks/useVehicles.js'
+import { useNotifications } from '../hooks/useNotifications.js'
 import LiveMap      from '../components/map/LiveMap.jsx'
 import VehicleList  from '../components/panels/VehicleList.jsx'
 import SOSPanel     from '../components/panels/SOSPanel.jsx'
 import CommandCenter from '../components/controls/CommandCenter.jsx'
 import CommandLog   from '../components/panels/CommandLog.jsx'
-import { Shield, Map, List, AlertTriangle, Radio, LogOut, Activity } from 'lucide-react'
+import { Shield, Map, List, AlertTriangle, Radio, LogOut, Activity, Bell } from 'lucide-react'
 
 const TABS = [
   { id:'map',   label:'LIVE MAP',  icon:<Map size={12}/>         },
   { id:'fleet', label:'FLEET',     icon:<List size={12}/>        },
   { id:'sos',   label:'SOS',       icon:<AlertTriangle size={12}/> },
+  { id:'inbox', label:'INBOX',     icon:<Bell size={12}/>        },
 ]
 
 export default function Dashboard({ user, profile, session, onSignOut, isDemo = false }) {
@@ -21,6 +23,7 @@ export default function Dashboard({ user, profile, session, onSignOut, isDemo = 
     sosAlerts, commandLog,
     issueCommand, resolveSOS,
   } = useVehicles(isDemo)
+  const { notifications, unread, markRead, markAllRead } = useNotifications(isDemo)
 
   const role      = profile?.role || 'admin'
   const initials  = (profile?.full_name || 'A')[0].toUpperCase()
@@ -48,6 +51,9 @@ export default function Dashboard({ user, profile, session, onSignOut, isDemo = 
               {t.icon} {t.label}
               {t.id==='sos' && sosCount>0 && (
                 <span style={{ position:'absolute', top:-4, right:-4, background:'var(--red)', color:'#fff', borderRadius:'50%', width:14, height:14, fontSize:8, display:'flex', alignItems:'center', justifyContent:'center', animation:'blink 0.8s infinite' }}>{sosCount}</span>
+              )}
+              {t.id==='inbox' && unread>0 && (
+                <span style={{ position:'absolute', top:-4, right:-4, background:'var(--red)', color:'#fff', borderRadius:'50%', width:14, height:14, fontSize:8, display:'flex', alignItems:'center', justifyContent:'center', animation:'blink 0.8s infinite' }}>{unread}</span>
               )}
             </button>
           ))}
@@ -113,6 +119,7 @@ export default function Dashboard({ user, profile, session, onSignOut, isDemo = 
               )}
               {tab === 'fleet' && <FleetTable vehicles={vehicles} onSelect={setSelectedVehicle} />}
               {tab === 'sos'   && <SOSPanel alerts={sosAlerts} onResolve={resolveSOS} onSelect={v=>{setSelectedVehicle(v);setTab('map')}} />}
+              {tab === 'inbox' && <InboxPanel notifications={notifications} onMarkRead={markRead} onMarkAllRead={markAllRead} />}
             </>
           )}
 
@@ -190,6 +197,63 @@ function FleetTable({ vehicles, onSelect }) {
           })}
         </tbody>
       </table>
+    </div>
+  )
+}
+
+function InboxPanel({ notifications, onMarkRead, onMarkAllRead }) {
+  const unreadCount = notifications.filter(n => !n.read).length
+
+  if (notifications.length === 0) return (
+    <div style={{ flex:1, display:'flex', alignItems:'center', justifyContent:'center', flexDirection:'column', gap:8 }}>
+      <Bell size={28} style={{ color:'rgba(255,255,255,0.1)' }}/>
+      <div style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:9, letterSpacing:3, color:'var(--tdim)' }}>NO NOTIFICATIONS</div>
+    </div>
+  )
+
+  return (
+    <div style={{ flex:1, overflowY:'auto', padding:16 }}>
+      <div style={{ display:'flex', alignItems:'center', justifyContent:'space-between', marginBottom:12 }}>
+        <div style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:9, letterSpacing:3, color:'var(--tdim)' }}>
+          INBOX — {notifications.length} NOTIFICATION{notifications.length!==1?'S':''}{unreadCount>0?` · ${unreadCount} UNREAD`:''}
+        </div>
+        {unreadCount > 0 && (
+          <button onClick={onMarkAllRead} style={{ background:'transparent', border:'1px solid var(--border)', borderRadius:3, padding:'3px 8px', color:'var(--tmid)', cursor:'pointer', fontFamily:"'Share Tech Mono',monospace", fontSize:8, letterSpacing:1 }}>
+            MARK ALL READ
+          </button>
+        )}
+      </div>
+      <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
+        {notifications.map(n => (
+          <div key={n.id} onClick={() => !n.read && onMarkRead(n.id)}
+            style={{ padding:12, background:n.read?'transparent':'rgba(0,212,255,0.04)', border:`1px solid ${n.read?'var(--border)':'rgba(0,212,255,0.2)'}`, borderRadius:4, cursor:n.read?'default':'pointer' }}>
+            <div style={{ display:'flex', alignItems:'flex-start', justifyContent:'space-between', gap:8, marginBottom:4 }}>
+              <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:9, letterSpacing:1, color:n.read?'var(--tmid)':'var(--accent)', fontWeight:n.read?400:700 }}>{n.title}</span>
+              <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:8, color:'var(--tdim)', whiteSpace:'nowrap', flexShrink:0 }}>
+                {new Date(n.created_at).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}
+              </span>
+            </div>
+            <div style={{ fontSize:11, color:'var(--tmid)', marginBottom:n.vehicle||n.from_user?6:0 }}>{n.body}</div>
+            {(n.vehicle || n.from_user) && (
+              <div style={{ display:'flex', gap:12, flexWrap:'wrap' }}>
+                {n.from_user && (
+                  <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:8, color:'var(--tdim)' }}>
+                    👤 {n.from_user.full_name} · {n.from_user.phone}
+                  </span>
+                )}
+                {n.vehicle && (
+                  <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:8, color:'var(--tdim)' }}>
+                    🚗 {n.vehicle.plate} · {n.vehicle.year} {n.vehicle.make} {n.vehicle.model} · {(n.vehicle.registration_category||'').toUpperCase()}
+                  </span>
+                )}
+              </div>
+            )}
+            {!n.read && (
+              <div style={{ marginTop:4, width:6, height:6, borderRadius:'50%', background:'var(--accent)' }}/>
+            )}
+          </div>
+        ))}
+      </div>
     </div>
   )
 }
