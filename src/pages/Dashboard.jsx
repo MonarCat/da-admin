@@ -13,14 +13,14 @@ const TABS = [
   { id:'sos',   label:'SOS',       icon:<AlertTriangle size={12}/> },
 ]
 
-export default function Dashboard({ user, profile, session, onSignOut }) {
+export default function Dashboard({ user, profile, session, onSignOut, isDemo = false }) {
   const [tab, setTab] = useState('map')
   const {
     vehicles, loading, networkStats,
     selectedVehicle, setSelectedVehicle,
     sosAlerts, commandLog,
     issueCommand, resolveSOS,
-  } = useVehicles()
+  } = useVehicles(isDemo)
 
   const role      = profile?.role || 'admin'
   const initials  = (profile?.full_name || 'A')[0].toUpperCase()
@@ -74,6 +74,14 @@ export default function Dashboard({ user, profile, session, onSignOut }) {
           </button>
         </div>
       </header>
+
+      {/* DEMO BANNER */}
+      {isDemo && (
+        <div style={{ background:'rgba(212,168,71,0.12)', borderBottom:'1px solid rgba(212,168,71,0.35)', padding:'5px 16px', display:'flex', alignItems:'center', gap:10, flexShrink:0, zIndex:200 }}>
+          <span style={{ fontFamily:"'Share Tech Mono',monospace", fontSize:9, letterSpacing:2, color:'var(--gold)' }}>⚠ DEMO MODE — 8 simulated vehicles · no live data · commands are mocked</span>
+          <button onClick={onSignOut} style={{ marginLeft:'auto', background:'transparent', border:'1px solid rgba(212,168,71,0.4)', borderRadius:3, padding:'2px 8px', color:'var(--gold)', cursor:'pointer', fontFamily:"'Share Tech Mono',monospace", fontSize:8, letterSpacing:1 }}>EXIT DEMO</button>
+        </div>
+      )}
 
       {/* MAIN */}
       <div style={{ flex:1, display:'flex', overflow:'hidden' }}>

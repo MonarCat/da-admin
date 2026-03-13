@@ -5,7 +5,7 @@ import AdminSignUp from './pages/AdminSignUp.jsx'
 import Dashboard from './pages/Dashboard.jsx'
 
 export default function App() {
-  const { user, session, loading, signIn, demo, signOut } = useAuth()
+  const { user, session, profile, loading, isDemo, signIn, demo, signOut } = useAuth()
   const [page, setPage] = useState('login') // login | signup
   const [loadingTooLong, setLoadingTooLong] = useState(false)
 
@@ -49,5 +49,5 @@ export default function App() {
     )
   }
 
-  return <Dashboard user={user} session={session} onSignOut={signOut} />
+  return <Dashboard user={user} profile={profile} session={session} onSignOut={signOut} isDemo={isDemo} />
 }
