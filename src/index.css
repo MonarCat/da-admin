@@ -85,3 +85,48 @@ button, a, input, select, textarea { cursor:pointer !important; }
   background:linear-gradient(90deg,transparent,rgba(0,212,255,0.22),transparent);
   animation:scanLine 5s linear infinite;
 }
+
+/* ── Select dropdown option visibility fix ── */
+select {
+  background-color: #0f1623;
+  color: #ffffff;
+}
+
+select option {
+  background-color: #0f1623;
+  color: #ffffff;
+  padding: 8px 12px;
+}
+
+select option:hover,
+select option:checked {
+  background-color: #00d4ff22;
+  color: #00d4ff;
+}
+
+select:focus {
+  border-color: #00d4ff !important;
+  outline: none;
+}
+
+/* Admin dark theme select */
+.da-select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-color: rgba(0, 212, 255, 0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 6px;
+  padding: 10px 32px 10px 13px;
+  color: #ffffff;
+  font-family: 'Exo 2', sans-serif;
+  font-size: 13px;
+  width: 100%;
+  outline: none;
+  transition: border-color 0.2s;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+}
+
+.da-select:focus { border-color: #00d4ff; }
+.da-select option { background:#0f1623; color:#fff; }
