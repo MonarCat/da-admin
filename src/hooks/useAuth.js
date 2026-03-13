@@ -1,8 +1,6 @@
 import { useState, useEffect } from 'react'
 import { supabase } from '../lib/supabase.js'
 
-const TIMEOUT_MS = 5000 // give up after 5 seconds
-
 export function useAuth() {
   const [user, setUser]       = useState(null)
   const [session, setSession] = useState(null)
@@ -10,56 +8,41 @@ export function useAuth() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    // Hard timeout — ALWAYS resolve loading after 5s no matter what
     const timeout = setTimeout(() => {
       console.warn('Auth timeout — forcing loading to false')
       setLoading(false)
-    }, TIMEOUT_MS)
+    }, 6000)
 
-    supabase.auth.getSession().then(async ({ data: { session: s }, error }) => {
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       clearTimeout(timeout)
-      if (error || !s?.user) {
-        setLoading(false)
-        return
+      if (s?.user) {
+        setSession(s)
+        await hydrate(s.user)
       }
-      setSession(s)
-      await hydrate(s.user, s.access_token)
       setLoading(false)
     }).catch(() => {
       clearTimeout(timeout)
       setLoading(false)
     })
 
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, s) => {
-      if (event === 'SIGNED_OUT')  { setUser(null); setProfile(null); setSession(null) }
-      if (event === 'SIGNED_IN' && s?.user) {
-        setSession(s)
-        await hydrate(s.user, s.access_token)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, s) => {
+        console.log('Auth event:', event)
+        if (event === 'SIGNED_IN' && s?.user) {
+          setSession(s)
+          await hydrate(s.user)
+        }
+        if (event === 'SIGNED_OUT') {
+          setUser(null); setProfile(null); setSession(null)
+        }
       }
-    })
+    )
 
     return () => { clearTimeout(timeout); subscription.unsubscribe() }
   }, [])
 
-  async function hydrate(u, token) {
-    // Layer 1 — try API
-    try {
-      const controller = new AbortController()
-      const timer = setTimeout(() => controller.abort(), 3000)
-      const res = await fetch('/api/auth/me', {
-        headers: { Authorization: `Bearer ${token}` },
-        signal: controller.signal
-      })
-      clearTimeout(timer)
-      if (res.ok) {
-        const data = await res.json()
-        setUser(u)
-        setProfile(data.profile)
-        return
-      }
-    } catch {}
-
-    // Layer 2 — direct Supabase query
+  async function hydrate(u) {
+    // Go direct to Supabase — skip the broken /api/auth/me
     try {
       const { data: p } = await supabase
         .from('profiles')
@@ -70,9 +53,28 @@ export function useAuth() {
       if (p) { setUser(u); setProfile(p); return }
     } catch {}
 
-    // Layer 3 — bare minimum, never block
-    setUser(u)
-    setProfile({ id: u.id, full_name: u.email?.split('@')[0] ?? 'User', role: 'driver' })
+    // Profile missing — create it
+    try {
+      const name = u.user_metadata?.full_name || u.email?.split('@')[0] || 'User'
+      const { data: newP } = await supabase
+        .from('profiles')
+        .upsert({
+          id: u.id,
+          full_name: name,
+          phone: u.user_metadata?.phone || null,
+          role: 'driver',
+          is_active: true,
+          clearance_level: 1,
+          avatar_initials: name[0].toUpperCase(),
+        }, { onConflict: 'id' })
+        .select()
+        .single()
+      setUser(u)
+      setProfile(newP || { id: u.id, full_name: name, role: 'driver' })
+    } catch {
+      setUser(u)
+      setProfile({ id: u.id, full_name: u.email?.split('@')[0], role: 'driver' })
+    }
   }
 
   async function signIn(email, password) {
@@ -87,9 +89,9 @@ export function useAuth() {
   }
 
   function demo() {
-    setUser({ id: 'demo', email: 'demo@da.local' })
-    setProfile({ id: 'demo', full_name: 'Demo Operator', role: 'super_admin', clearance_level: 10, is_active: true })
     setLoading(false)
+    setUser({ id: 'demo', email: 'demo@da.local' })
+    setProfile({ id:'demo', full_name:'Demo Operator', role:'super_admin', clearance_level:10, is_active:true })
   }
 
   return { user, session, profile, loading, isAuthenticated: !!user, signIn, signOut, demo }
