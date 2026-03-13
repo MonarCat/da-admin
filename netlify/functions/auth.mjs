@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js'
 
-const supabase = createClient(
-  Netlify.env.get('SUPABASE_DATABASE_URL'),
-  Netlify.env.get('SUPABASE_SERVICE_ROLE_KEY')
-)
-
 export default async (req) => {
+  // Guard — if env vars missing, return clear error instead of 502
+  const url = Netlify.env.get('SUPABASE_DATABASE_URL')
+  const key = Netlify.env.get('SUPABASE_SERVICE_ROLE_KEY')
+
+  if (!url || !key) {
+    return json({
+      error: 'Supabase env vars not configured on this Netlify site',
+      hint: 'Add SUPABASE_DATABASE_URL and SUPABASE_SERVICE_ROLE_KEY in Netlify → Site configuration → Environment variables'
+    }, 503)
+  }
+
+  const supabase = createClient(url, key)
   const path = new URL(req.url).pathname
 
   if (req.method === 'GET' && path.endsWith('/me')) {
@@ -16,7 +23,6 @@ export default async (req) => {
       const { data: { user }, error: userErr } = await supabase.auth.getUser(token)
       if (userErr || !user) return json({ error: 'Invalid token' }, 401)
 
-      // Get profile without joining organizations (in case table is missing)
       const { data: profile, error: profErr } = await supabase
         .from('profiles')
         .select('*')
@@ -24,7 +30,6 @@ export default async (req) => {
         .single()
 
       if (profErr || !profile) {
-        // Auto-create profile if missing
         const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'
         const { data: newProfile, error: createErr } = await supabase
           .from('profiles')
@@ -39,12 +44,11 @@ export default async (req) => {
           })
           .select()
           .single()
-
-        if (createErr) return json({ error: 'Profile error: ' + createErr.message }, 500)
+        if (createErr) return json({ error: createErr.message }, 500)
         return json({ user, profile: newProfile })
       }
 
-      // Try to fetch org separately — skip silently if organizations table missing
+      // Try org — skip silently if table missing
       let org = null
       if (profile.org_id) {
         try {
@@ -75,6 +79,4 @@ function json(data, status = 200) {
   })
 }
 
-export const config = {
-  path: '/api/auth/*'
-}
+export const config = { path: '/api/auth/*' }
