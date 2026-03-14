@@ -9,9 +9,9 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['favicon.svg'],
       manifest: {
-        name:             'D.A — Drive Assistant',
-        short_name:       'D.A',
-        description:      'Peer-to-peer vehicular mesh intelligence network',
+        name:             'D.A Command',
+        short_name:       'D.A CMD',
+        description:      'D.A fleet command and control',
         theme_color:      '#00d4ff',
         background_color: '#0a0e1a',
         display:          'standalone',
