@@ -6,13 +6,15 @@ import VehicleList  from '../components/panels/VehicleList.jsx'
 import SOSPanel     from '../components/panels/SOSPanel.jsx'
 import CommandCenter from '../components/controls/CommandCenter.jsx'
 import CommandLog   from '../components/panels/CommandLog.jsx'
-import { Shield, Map, List, AlertTriangle, Radio, LogOut, Activity, Bell } from 'lucide-react'
+import { Shield, Map, List, AlertTriangle, Radio, LogOut, Activity, Bell, CheckCircle, Cpu } from 'lucide-react'
+import Verification from './Verification.jsx'
 
 const TABS = [
-  { id:'map',   label:'LIVE MAP',  icon:<Map size={12}/>         },
-  { id:'fleet', label:'FLEET',     icon:<List size={12}/>        },
-  { id:'sos',   label:'SOS',       icon:<AlertTriangle size={12}/> },
-  { id:'inbox', label:'INBOX',     icon:<Bell size={12}/>        },
+  { id:'map',    label:'LIVE MAP',  icon:<Map size={12}/>           },
+  { id:'fleet',  label:'FLEET',     icon:<List size={12}/>          },
+  { id:'sos',    label:'SOS',       icon:<AlertTriangle size={12}/> },
+  { id:'inbox',  label:'INBOX',     icon:<Bell size={12}/>          },
+  { id:'verify', label:'VERIFY',    icon:<CheckCircle size={12}/>   },
 ]
 
 export default function Dashboard({ user, profile, session, onSignOut, isDemo = false }) {
@@ -119,7 +121,8 @@ export default function Dashboard({ user, profile, session, onSignOut, isDemo = 
               )}
               {tab === 'fleet' && <FleetTable vehicles={vehicles} onSelect={setSelectedVehicle} />}
               {tab === 'sos'   && <SOSPanel alerts={sosAlerts} onResolve={resolveSOS} onSelect={v=>{setSelectedVehicle(v);setTab('map')}} />}
-              {tab === 'inbox' && <InboxPanel notifications={notifications} onMarkRead={markRead} onMarkAllRead={markAllRead} />}
+              {tab === 'inbox'  && <InboxPanel notifications={notifications} onMarkRead={markRead} onMarkAllRead={markAllRead} />}
+              {tab === 'verify' && <Verification vehicles={vehicles} isDemo={isDemo} />}
             </>
           )}
 
