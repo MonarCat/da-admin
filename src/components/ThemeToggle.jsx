@@ -1,7 +1,7 @@
 // shared/ThemeToggle.jsx
 // Drop into any nav/header in both da-app and da-admin
 
-import { useTheme } from './theme';
+import { useTheme } from '../theme.jsx';
 
 export default function ThemeToggle({ className = '' }) {
   const { theme, toggle } = useTheme();
