@@ -8,6 +8,7 @@ import CommandCenter from '../components/controls/CommandCenter.jsx'
 import CommandLog   from '../components/panels/CommandLog.jsx'
 import { Shield, Map, List, AlertTriangle, Radio, LogOut, Activity, Bell, CheckCircle, Cpu } from 'lucide-react'
 import Verification from './Verification.jsx'
+import ThemeToggle from '../components/ThemeToggle.jsx'
 
 const TABS = [
   { id:'map',    label:'LIVE MAP',  icon:<Map size={12}/>           },
@@ -70,6 +71,9 @@ export default function Dashboard({ user, profile, session, onSignOut, isDemo = 
             </div>
           ))}
         </div>
+
+        {/* Theme Toggle */}
+        <ThemeToggle />
 
         {/* User */}
         <div style={{ display:'flex', alignItems:'center', gap:8, paddingLeft:12, borderLeft:'1px solid var(--border)' }}>
