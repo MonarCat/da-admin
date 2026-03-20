@@ -3,15 +3,16 @@ import { useAuth }           from './hooks/useAuth.js'
 import Login                  from './pages/Login.jsx'
 import AdminSignUp            from './pages/AdminSignUp.jsx'
 import Dashboard              from './pages/Dashboard.jsx'
-import ShadowMesh             from './pages/ShadowMesh.jsx'
+import ShadowMesh             from './components/ShadowMesh'
  
 export default function App() {
   const { user, session, profile, loading, isDemo, signIn, signOut, demo } = useAuth()
   const [page, setPage] = useState('login')
  
-  // Hidden route — shadow ops
-  const isShadowOps = window.location.pathname === '/shadow-ops'
-  if (user && isShadowOps) return <ShadowMesh profile={profile} />
+  // Hidden routes — shadow ops
+  const isShadowOps  = window.location.pathname === '/shadow-ops'
+  const isShadowMesh = window.location.pathname === '/shadow-mesh'
+  if (user && (isShadowOps || isShadowMesh)) return <ShadowMesh adminUser={user} />
  
   if (loading) return (
     <div style={{ height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg)', flexDirection:'column', gap:14 }}>
