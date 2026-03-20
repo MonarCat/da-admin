@@ -6,16 +6,20 @@ import VehicleList  from '../components/panels/VehicleList.jsx'
 import SOSPanel     from '../components/panels/SOSPanel.jsx'
 import CommandCenter from '../components/controls/CommandCenter.jsx'
 import CommandLog   from '../components/panels/CommandLog.jsx'
-import { Shield, Map, List, AlertTriangle, Radio, LogOut, Activity, Bell, CheckCircle, Cpu } from 'lucide-react'
+import { Shield, Map, List, AlertTriangle, Radio, LogOut, Activity, Bell, CheckCircle, Cpu, Users } from 'lucide-react'
 import Verification from './Verification.jsx'
+import FleetManagement from '../components/FleetManagement'
+import AdminManagement from '../components/AdminManagement'
+import AdminInbox      from '../components/AdminInbox'
 import ThemeToggle from '../components/ThemeToggle.jsx'
 
-const TABS = [
+const BASE_TABS = [
   { id:'map',    label:'LIVE MAP',  icon:<Map size={12}/>           },
   { id:'fleet',  label:'FLEET',     icon:<List size={12}/>          },
   { id:'sos',    label:'SOS',       icon:<AlertTriangle size={12}/> },
   { id:'inbox',  label:'INBOX',     icon:<Bell size={12}/>          },
   { id:'verify', label:'VERIFY',    icon:<CheckCircle size={12}/>   },
+  { id:'admins', label:'ADMINS',    icon:<Users size={12}/>,  roles:['super_admin'] },
 ]
 
 export default function Dashboard({ user, profile, session, onSignOut, isDemo = false }) {
@@ -31,6 +35,8 @@ export default function Dashboard({ user, profile, session, onSignOut, isDemo = 
   const role      = profile?.role || 'admin'
   const initials  = (profile?.full_name || 'A')[0].toUpperCase()
   const sosCount  = sosAlerts.length
+
+  const TABS = BASE_TABS.filter(t => !t.roles || t.roles.includes(role))
 
   return (
     <div style={{ height:'100vh', display:'flex', flexDirection:'column', background:'var(--bg)', overflow:'hidden', fontFamily:"'Exo 2',sans-serif" }}>
@@ -123,10 +129,11 @@ export default function Dashboard({ user, profile, session, onSignOut, isDemo = 
                   onVehicleSelect={setSelectedVehicle}
                 />
               )}
-              {tab === 'fleet' && <FleetTable vehicles={vehicles} onSelect={setSelectedVehicle} />}
+              {tab === 'fleet' && <FleetManagement adminUser={user} />}
               {tab === 'sos'   && <SOSPanel alerts={sosAlerts} onResolve={resolveSOS} onSelect={v=>{setSelectedVehicle(v);setTab('map')}} />}
-              {tab === 'inbox'  && <InboxPanel notifications={notifications} onMarkRead={markRead} onMarkAllRead={markAllRead} />}
+              {tab === 'inbox'  && <AdminInbox adminUser={user} />}
               {tab === 'verify' && <Verification vehicles={vehicles} isDemo={isDemo} />}
+              {tab === 'admins' && role === 'super_admin' && <AdminManagement adminUser={user} />}
             </>
           )}
 
