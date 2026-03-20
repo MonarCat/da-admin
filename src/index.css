@@ -1,32 +1,86 @@
+/* ============================================================
+   D.A Global Styles — import in both da-app and da-admin
+   Theme CSS variables are injected dynamically by theme.jsx
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --bg:        #02070d;
-  --bg2:       #030c14;
-  --panel:     #040e1a;
-  --panel2:    #051120;
-  --border:    #0a1f33;
-  --border2:   #0d2840;
-  --accent:    #00d4ff;
-  --adim:      rgba(0,212,255,0.1);
-  --green:     #00ff9d;
-  --gdim:      rgba(0,255,157,0.1);
-  --red:       #ff2d44;
-  --rdim:      rgba(255,45,68,0.12);
-  --orange:    #ff8c00;
-  --yellow:    #ffc82c;
-  --purple:    #b060ff;
-  --gold:      #d4a847;
-  --text:      #b8ccd8;
-  --tmid:      #5a7a8a;
-  --tdim:      #2a4055;
+html {
+  /* Dark theme defaults (overridden by theme.js) */
+  --bg-primary:     #0a0c10;
+  --bg-secondary:   #111318;
+  --bg-card:        #161a22;
+  --bg-hover:       #1e2330;
+  --border:         #252b3b;
+  --border-strong:  #2f3750;
+  --text-primary:   #e8ecf5;
+  --text-secondary: #8892a4;
+  --text-muted:     #4a5568;
+  --accent:         #3b82f6;
+  --accent-hover:   #2563eb;
+  --accent-glow:    rgba(59,130,246,0.12);
+  --success:        #10b981;
+  --warning:        #f59e0b;
+  --danger:         #ef4444;
+  --danger-glow:    rgba(239,68,68,0.15);
+  --purple:         #8b5cf6;
+  --cyan:           #06b6d4;
+
+  /* Backwards-compatible aliases for legacy var(--*) usage */
+  --bg:      var(--bg-primary);
+  --bg2:     var(--bg-secondary);
+  --panel:   var(--bg-card);
+  --panel2:  var(--bg-hover);
+  --border2: var(--border-strong);
+  --text:    var(--text-primary);
+  --tmid:    var(--text-secondary);
+  --tdim:    var(--text-muted);
+  --adim:    var(--accent-glow);
+  --green:   var(--success);
+  --gdim:    rgba(16,185,129,0.1);
+  --red:     var(--danger);
+  --rdim:    var(--danger-glow);
+  --orange:  var(--warning);
+  --yellow:  #ffc82c;
+  --gold:    #d4a847;
+
+  font-family: 'Inter', -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ── Light theme overrides (applied via data-theme="light") ── */
+[data-theme="light"] {
+  --bg-primary:     #f0f4ff;
+  --bg-secondary:   #ffffff;
+  --bg-card:        #ffffff;
+  --bg-hover:       #f5f7ff;
+  --border:         #e2e8f0;
+  --border-strong:  #cbd5e1;
+  --text-primary:   #0f172a;
+  --text-secondary: #475569;
+  --text-muted:     #94a3b8;
+  --accent:         #2563eb;
+  --accent-hover:   #1d4ed8;
+  --accent-glow:    rgba(37,99,235,0.1);
+  --success:        #059669;
+  --warning:        #d97706;
+  --danger:         #dc2626;
+  --danger-glow:    rgba(220,38,38,0.1);
+  --purple:         #7c3aed;
+  --cyan:           #0891b2;
 }
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 html, body, #root { height:100%; width:100%; overflow:hidden; }
-body { background:var(--bg); color:var(--text); font-family:'Exo 2',sans-serif; -webkit-font-smoothing:antialiased; }
+body { background:var(--bg-primary); color:var(--text-primary); font-family:'Inter',-apple-system,sans-serif; -webkit-font-smoothing:antialiased; }
 * { cursor:crosshair !important; }
 button, a, input, select, textarea { cursor:pointer !important; }
 
@@ -86,71 +140,29 @@ button, a, input, select, textarea { cursor:pointer !important; }
   animation:scanLine 5s linear infinite;
 }
 
-/* ── Select dropdown option visibility fix ── */
-select {
-  background-color: #0f1623;
-  color: #ffffff;
-}
+/* ── Select dropdown option visibility ── */
+select { background-color: var(--bg-card); color: var(--text-primary); }
+select option { background-color: var(--bg-card); color: var(--text-primary); padding: 8px 12px; }
+select option:hover, select option:checked { background-color: var(--accent-glow); color: var(--accent); }
+select:focus { border-color: var(--accent) !important; outline: none; }
 
-select option {
-  background-color: #0f1623;
-  color: #ffffff;
-  padding: 8px 12px;
-}
-
-select option:hover,
-select option:checked {
-  background-color: #00d4ff22;
-  color: #00d4ff;
-}
-
-select:focus {
-  border-color: #00d4ff !important;
-  outline: none;
-}
-
-/* Admin dark theme select */
-.da-select {
-  appearance: none;
-  -webkit-appearance: none;
-  background-color: rgba(0, 212, 255, 0.04);
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 6px;
-  padding: 10px 32px 10px 13px;
-  color: #ffffff;
-  font-family: 'Exo 2', sans-serif;
-  font-size: 13px;
-  width: 100%;
-  outline: none;
-  transition: border-color 0.2s;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 12px center;
-}
-
-.da-select:focus { border-color: #00d4ff; }
-.da-select option { background:#0f1623; color:#fff; }
-/* Dark theme select fix — options visible */
-select { background-color: #0f1623; color: #ffffff; }
-select option { background-color: #0f1623; color: #ffffff; padding: 8px 12px; }
-select option:hover, select option:checked { background-color: rgba(0,212,255,0.15); color: #00d4ff; }
-select:focus { border-color: #00d4ff !important; outline: none; }
- 
 /* da-select class */
 .da-select {
   appearance: none; -webkit-appearance: none;
-  background-color: rgba(0,212,255,0.04);
-  border: 1px solid rgba(255,255,255,0.1);
+  background-color: var(--accent-glow);
+  border: 1px solid var(--border);
   border-radius: 6px; padding: 10px 32px 10px 13px;
-  color: #ffffff; font-family: 'Exo 2', sans-serif; font-size: 13px;
+  color: var(--text-primary); font-family: 'Inter', -apple-system, sans-serif; font-size: 13px;
   width: 100%; outline: none; transition: border-color 0.2s;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='rgba(255,255,255,0.3)'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 12px center;
 }
-.da-select:focus { border-color: #00d4ff; }
-.da-select option { background: #0f1623; color: #fff; }
- 
+.da-select:focus { border-color: var(--accent); }
+.da-select option { background: var(--bg-card); color: var(--text-primary); }
+
+/* ── Utility ── */
+.mono { font-family: 'IBM Plex Mono', monospace; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0,0,0,0); }
+
 /* Animations */
-@keyframes spin  { to { transform: rotate(360deg) } }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
 @keyframes pulse-red { 0%,100%{box-shadow:0 0 0 0 rgba(255,45,68,0.4)} 50%{box-shadow:0 0 0 8px rgba(255,45,68,0)} }

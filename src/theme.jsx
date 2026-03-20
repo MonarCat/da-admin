@@ -1,4 +1,4 @@
-// shared/theme.js
+// shared/theme.jsx
 // D.A Theme System — import in both da-app and da-admin
 // Usage: import { ThemeProvider, useTheme } from './theme';
 
@@ -16,7 +16,7 @@ export const themes = {
     '--border':        '#252b3b',
     '--border-strong': '#2f3750',
     '--text-primary':  '#e8ecf5',
-    '--text-secondary':'#8892a4',
+    '--text-secondary': '#8892a4',
     '--text-muted':    '#4a5568',
     '--accent':        '#3b82f6',
     '--accent-hover':  '#2563eb',
@@ -37,7 +37,7 @@ export const themes = {
     '--border':        '#e2e8f0',
     '--border-strong': '#cbd5e1',
     '--text-primary':  '#0f172a',
-    '--text-secondary':'#475569',
+    '--text-secondary': '#475569',
     '--text-muted':    '#94a3b8',
     '--accent':        '#2563eb',
     '--accent-hover':  '#1d4ed8',
