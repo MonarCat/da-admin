@@ -12,7 +12,7 @@ export default function App() {
   // Hidden routes — shadow ops
   const isShadowOps  = window.location.pathname === '/shadow-ops'
   const isShadowMesh = window.location.pathname === '/shadow-mesh'
-  if (user && (isShadowOps || isShadowMesh)) return <ShadowMesh adminUser={user} />
+  if (user && (isShadowOps || isShadowMesh)) return <ShadowOpsGuard user={user} />
  
   if (loading) return (
     <div style={{ height:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'var(--bg)', flexDirection:'column', gap:14 }}>
