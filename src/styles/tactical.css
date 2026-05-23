@@ -1,0 +1,113 @@
+:root {
+  --tac-bg: #040d0a;
+  --tac-surface: #020806;
+  --tac-border: #0b2a1c;
+  --tac-dim: #0a2218;
+  --tac-green: #00ff8a;
+  --tac-mid: #00c896;
+  --tac-muted: #3a7a5a;
+  --tac-amber: #ff8c00;
+  --tac-red: #ff3838;
+  --font-display: 'Orbitron', sans-serif;
+  --font-mono: 'Share Tech Mono', 'Courier New', monospace;
+  --font-label: 'Rajdhani', sans-serif;
+  --font-body: 'Exo 2', sans-serif;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  background: var(--tac-bg);
+  color: var(--tac-mid);
+  font-family: var(--font-body);
+  margin: 0;
+}
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: var(--tac-surface);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--tac-border);
+  border-radius: 2px;
+}
+@keyframes tacBlink {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+@keyframes tacPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}
+.tac-blink {
+  animation: tacBlink 1s step-end infinite;
+}
+.tac-classified {
+  animation: tacPulse 1.4s ease-in-out infinite;
+  color: var(--tac-red);
+}
+.tac-panel {
+  background: var(--tac-surface);
+  border: 1px solid var(--tac-border);
+  border-radius: 4px;
+}
+.tac-panel-header {
+  font-family: var(--font-label);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  color: var(--tac-muted);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--tac-border);
+  padding: 6px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.tac-btn {
+  background: transparent;
+  border: 1px solid var(--tac-border);
+  color: var(--tac-mid);
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  padding: 4px 12px;
+  cursor: pointer;
+  border-radius: 3px;
+  text-transform: uppercase;
+}
+.tac-btn:hover {
+  border-color: var(--tac-green);
+  color: var(--tac-green);
+}
+.tac-btn.danger {
+  border-color: var(--tac-red);
+  color: var(--tac-red);
+}
+.leaflet-container {
+  background: #020806 !important;
+}
+.leaflet-tile {
+  filter: brightness(0.4) saturate(0.3) hue-rotate(120deg);
+}
+.leaflet-popup-content-wrapper {
+  background: #040d0a !important;
+  color: #00c896 !important;
+  border: 1px solid #0b2a1c !important;
+  border-radius: 3px !important;
+  font-family: 'Share Tech Mono', monospace !important;
+  font-size: 11px !important;
+}
+.leaflet-popup-tip {
+  background: #040d0a !important;
+}
