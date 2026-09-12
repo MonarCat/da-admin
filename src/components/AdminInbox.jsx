@@ -97,8 +97,7 @@ export default function AdminInbox({ adminUser }) {
       }, () => loadPendingRegistrations())
       .on('postgres_changes', {
         event: 'INSERT', schema: 'public', table: 'notifications',
-        filter: `user_id=eq.${adminUser?.id}`,
-      }, payload => setNotifications(prev => [payload.new, ...prev]))
+      }, payload => { if (payload.new.to_role === 'admin') setNotifications(prev => [payload.new, ...prev]) })
       .subscribe();
 
     return () => supabase.removeChannel(ch);
@@ -118,12 +117,18 @@ export default function AdminInbox({ adminUser }) {
     const { data } = await supabase
       .from('notifications')
       .select('*')
-      .eq('user_id', adminUser?.id)
+      .eq('to_role', 'admin')
       .order('created_at', { ascending: false })
       .limit(50);
     setNotifications(data || []);
   }
 
+  // NOTE: this whole function targets columns that don't exist on the
+  // live `vehicle_registrations` or `notifications` tables (is_verified,
+  // verified_feedback, message, data -- none of these are real columns).
+  // It's a leftover parallel system; Verification.jsx + /api/verify-vehicle
+  // against the real `vehicles` table is the one actually in use. Retire
+  // this rather than patch it to half-match, to avoid a third schema fork.
   async function verifyRegistration(reg, approved) {
     const feedback = feedbacks[reg.id] || (approved ? 'Vehicle registration verified successfully.' : '');
     if (!approved && !feedback.trim()) {
@@ -170,18 +175,18 @@ export default function AdminInbox({ adminUser }) {
   }
 
   async function markRead(notifId) {
-    await supabase.from('notifications').update({ is_read: true }).eq('id', notifId);
-    setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, is_read: true } : n));
+    await supabase.from('notifications').update({ read: true }).eq('id', notifId);
+    setNotifications(prev => prev.map(n => n.id === notifId ? { ...n, read: true } : n));
   }
 
   async function markAllRead() {
-    const ids = notifications.filter(n => !n.is_read).map(n => n.id);
+    const ids = notifications.filter(n => !n.read).map(n => n.id);
     if (!ids.length) return;
-    await supabase.from('notifications').update({ is_read: true }).in('id', ids);
-    setNotifications(prev => prev.map(n => ({ ...n, is_read: true })));
+    await supabase.from('notifications').update({ read: true }).in('id', ids);
+    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
   }
 
-  const unreadCount = notifications.filter(n => !n.is_read).length;
+  const unreadCount = notifications.filter(n => !n.read).length;
 
   return (
     <div style={S.wrap}>
@@ -329,11 +334,11 @@ export default function AdminInbox({ adminUser }) {
           ) : notifications.map(n => (
             <div
               key={n.id}
-              style={S.card(!n.is_read)}
-              onClick={() => !n.is_read && markRead(n.id)}
+              style={S.card(!n.read)}
+              onClick={() => !n.read && markRead(n.id)}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                <div style={{ fontWeight: n.is_read ? 500 : 700, marginBottom: '4px' }}>
+                <div style={{ fontWeight: n.read ? 500 : 700, marginBottom: '4px' }}>
                   {n.title}
                 </div>
                 <div style={{ fontSize: '11px', color: 'var(--text-muted)', flexShrink: 0, marginLeft: '12px' }}>
@@ -341,7 +346,7 @@ export default function AdminInbox({ adminUser }) {
                 </div>
               </div>
               <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>{n.message}</div>
-              {!n.is_read && (
+              {!n.read && (
                 <div style={{ marginTop: '8px', fontSize: '11px', color: 'var(--accent)', cursor: 'pointer' }}>
                   Click to mark as read
                 </div>
