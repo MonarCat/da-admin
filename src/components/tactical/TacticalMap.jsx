@@ -31,7 +31,7 @@ export default function TacticalMap({ selectedVehicle }) {
   useEffect(() => {
     if (!L || !mapRef.current || mapInst.current) return undefined;
     const map = L.map(mapRef.current, { center: [-1.286389, 36.817223], zoom: 12, zoomControl: false });
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', { attribution: '&copy; CartoDB', subdomains: 'abcd', maxZoom: 19 }).addTo(map);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { attribution: '&copy; OpenStreetMap contributors', subdomains: 'abc', maxZoom: 19 }).addTo(map);
     L.control.zoom({ position: 'bottomright' }).addTo(map);
     mapInst.current = map;
 
