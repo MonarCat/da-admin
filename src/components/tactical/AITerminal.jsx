@@ -32,7 +32,11 @@ export default function AITerminal({ context }) {
     setLog((l) => [...l, { type: 'operator', text: `> [OPERATOR] ${q}` }]);
     try {
       const res = await queryAgent({ messages: newHist, context });
-      const text = res.content?.find((b) => b.type === 'text')?.text ?? '[NO RESPONSE]';
+      const textBlock = res.content?.find((b) => b.type === 'text')?.text;
+      const toolSummary = (res.tools_executed || [])
+        .map((t) => `[${t.tool}] ${t.result?.ok ? 'ok' : 'failed'} — ${JSON.stringify(t.result)}`)
+        .join('\n');
+      const text = textBlock || toolSummary || '[NO RESPONSE]';
       setHist((h) => [...h, { role: 'assistant', content: text }]);
       for (const line of text.split('\n').filter((lineText) => lineText.trim())) {
         await new Promise((r) => setTimeout(r, 80));

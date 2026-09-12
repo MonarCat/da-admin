@@ -2,16 +2,16 @@ import { supabase } from '../lib/supabase.js';
 
 export async function queryAgent({ messages, context }) {
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
-  if (!user) throw new Error('Not authenticated');
+  if (!session) throw new Error('Not authenticated');
 
   const res = await fetch('/api/ai-agent', {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Operator-UUID': user.id,
+      Authorization: `Bearer ${session.access_token}`,
     },
     body: JSON.stringify({ messages, context }),
   });
