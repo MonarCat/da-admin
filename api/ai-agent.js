@@ -3,10 +3,22 @@ import { createClient } from '@supabase/supabase-js';
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 
-const supabase = createClient(
-  process.env.SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+// Accept either name: the old Netlify functions used
+// SUPABASE_DATABASE_URL, newer code expects SUPABASE_URL. Support both so a
+// mismatch in Vercel's configured env var names doesn't crash the function.
+const SUPABASE_URL = process.env.SUPABASE_URL || process.env.SUPABASE_DATABASE_URL;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Lazy client: constructing this at module scope with a missing/undefined
+// URL throws immediately on cold start, crashing the whole invocation with
+// an opaque FUNCTION_INVOCATION_FAILED before any of our own error handling
+// runs. Build it inside the handler instead, after checking config exists.
+let supabase = null;
+function getSupabase() {
+  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) return null;
+  if (!supabase) supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+  return supabase;
+}
 
 const SUPER_ADMIN_UUID = 'a7a26e70-f360-4c02-9424-a8770374a206';
 const MAX_TOOL_ITERATIONS = 4;
@@ -149,8 +161,12 @@ async function logAccess(userId, granted) {
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
-  if (!process.env.ANTHROPIC_API_KEY || !process.env.SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
-    return res.status(500).json({ error: 'Missing server configuration' });
+  if (!process.env.ANTHROPIC_API_KEY) {
+    return res.status(500).json({ error: 'Missing server configuration: ANTHROPIC_API_KEY' });
+  }
+  const supabase = getSupabase();
+  if (!supabase) {
+    return res.status(500).json({ error: 'Missing server configuration: SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY not set on Vercel' });
   }
 
   // Real auth: verify the bearer token against Supabase, never trust a
