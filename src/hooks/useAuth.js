@@ -50,8 +50,16 @@ export function useAuth() {
   function exitDemo() { setIsDemo(false); setUser(null); setProfile(null); setSession(null) }
  
   async function signIn(email, password) {
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password })
-    if (error) throw error; return data
+    setLoading(true)
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({ email, password })
+      if (error) throw error
+      // Don't rely solely on onAuthStateChange firing SIGNED_IN -- see
+      // drive-assistant/src/hooks/useClientAuth.js for why that can hang.
+      if (data?.user) { setSession(data.session); await hydrate(data.user) }
+      setLoading(false)
+      return data
+    } catch (e) { setLoading(false); throw e }
   }
  
   async function signOut() {
